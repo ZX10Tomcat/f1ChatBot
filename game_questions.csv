@@ -1,0 +1,4 @@
+question_id,question,possible_answers,correct_answer,correct_answer_text,wrong_answer_text,difficulty_level
+1,Who won in Australia in 2010?,"Hamilton,Alonso,M. Schumacher,Ricciardo,Button",Alonso,It was Alonso,Alonso was the winner!,Medium
+2,Who won in Malaysia in 2012?,"Hamilton,Alonso,M. Schumacher,Ricciardo,Button",Hamilton,It was Hamilton,Hamilton was the winner!,Easy
+3,Who did the fastest lap in Monza in 2016?,"Hamilton,Alonso,M. Schumacher,Ricciardo,Button",Hamilton,Hamilton with 1:32:05,Hamilton did it! His lap time was 1:32:05,Hard
