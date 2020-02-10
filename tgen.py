@@ -1009,13 +1009,13 @@ def driver_not_racing(gp_name, circuit_name, locality, country, \
     return text
 
 def text_for_driver_or_team_info(driver, constructor, url, \
-                                nationality, birthday):
+                                nationality, birthday, homeland):
     text = []
     if driver!=None:
         a_or_an = 'an' if nationality[0].lower() in ['a','e','u','i','o'] else 'a'
         text.append(driver_mapping[driver] + " is " + a_or_an + " " + \
                     nationality + " driver.")
-        text.append("He was born on " + str(birthday) + ".")
+        text.append("He was born on " + str(birthday) + " in " + str(homeland) +".")
     else:
         a_or_an = 'an' if nationality[0].lower() in ['a','e','u','i','o'] else 'a'
         text.append(constuctor_mapping[constructor] + " is " + a_or_an + " " + \

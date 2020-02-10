@@ -267,7 +267,7 @@ def handle_command(input_text, audio_url, user_id):
     ##return "You said: ", str(input_text)
     #Connect to wit.ai
     f=open("appsettings/tokens.txt","r")
-    lines=f.readlines()
+    lines=f.read().split('\n')
     ACCESS_TOKEN=lines[2]
     f.close()
 
@@ -2486,11 +2486,11 @@ def get_driver_homeland(request, intent, previous_intent, CONTEXT):
         text = "For which driver or team are you asking for?"
         return text, CONTEXT
 
-    url, nationality, birthday = \
+    url, nationality, birthday, homeland = \
                 driver_homeland(driver)
 
     resp = tgen.text_for_driver_or_team_info(driver, None, url, \
-                                            nationality, birthday)
+                                            nationality, birthday, homeland)
     return resp, CONTEXT
 
 def get_flags(request, intent, previous_intent, CONTEXT):

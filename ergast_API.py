@@ -1,25 +1,26 @@
 from bs4 import BeautifulSoup
+import urllib
 import urllib3
+import urllib.request
 import pandas as pd
 import string
 import requests
 from mappings import replace_characters, driver_mapping, constuctor_mapping
 
+from dbpedia_API import dbpedia_get_hometown
+
 from datetime import datetime
 import time
 import logging
+import lxml.etree
 
-def url_to_soup(url):
-    if 'wikipedia' not in url:
-        http = urllib3.PoolManager()
-        response = http.request('GET', url)
-        soup = BeautifulSoup(response.data, 'html.parser')
+from SPARQLWrapper import SPARQLWrapper, JSON
 
-    else:
-        response = requests.get(url).text
-        soup = BeautifulSoup(response, 'html.parser')
+def url_to_soup(url): 
 
-
+    http = urllib3.PoolManager()
+    response = http.request('GET', url)
+    soup = BeautifulSoup(response.data, 'html.parser')
     return soup
 
 def yearly_race_schedule(year=2008):
@@ -1724,18 +1725,9 @@ def driver_homeland(driver):
         birthday = soup.find('driver').find('dateofbirth').text
         birthday = datetime.strptime(birthday, '%Y-%m-%d').strftime('%d-%m-%Y')
         nationality = soup.find('driver').find('nationality').text
-        hometown = wiki_hometown(url)
-    return url, nationality, birthday
-
-def wiki_hometown(url):
-    #url = "http://ergast.com/api/f1/drivers/" + driver
-    url = url.replace("http", "https")
-    soup = url_to_soup(url)
-    biography = soup.find('table',{'class':'vcard'})
-    details = biography.find_all('a')
-    hometown = details[-1]
-
-    return hometown
+        name = soup.find('driver').find('givenname').text + ' ' + soup.find('driver').find('familyname').text
+        homeland = dbpedia_get_hometown(name)
+    return url, nationality, birthday, homeland
 
 def get_season_review_url(year):
     url = "http://ergast.com/api/f1/seasons?limit=200&offset=0"

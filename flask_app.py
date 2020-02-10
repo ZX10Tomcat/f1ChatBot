@@ -16,7 +16,7 @@ app = Flask(__name__)
 #sslify = SSLify(app)
 
 f=open("appsettings/tokens.txt","r")
-lines=f.readlines()
+lines=f.read().split('\n')
 ACCESS_TOKEN=lines[0]
 VERIFY_TOKEN=lines[1]
 f.close()
