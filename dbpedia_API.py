@@ -11,7 +11,6 @@ def dbpedia_get_hometown(driver_name):
         PREFIX dbp: <http://dbpedia.org/property/>
         
         SELECT ?birthPlace
-
         WHERE { 
             ?person a dbo:Person .
             {?person rdfs:label "{driver_name}"@en}

@@ -10,7 +10,7 @@ import threading
 import subprocess
 import sys
 import urllib3
-import speech_recognition as sr
+#import speech_recognition as sr
 
 def clean_dict(y):
     # for key in y.keys():

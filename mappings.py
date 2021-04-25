@@ -850,7 +850,17 @@ driver_mapping = {'hamilton' : 'Lewis Hamilton',
                 'haryanto' : 'Rio Haryanto',
                 'vandoorne' : 'Stoffel Vandoorne',
                 'ocon' : 'Esteban Ocon',
-                'leclerc' : 'Charles Leclerc'
+                'leclerc' : 'Charles Leclerc',
+                'gasly' : 'Pierre Gasly',
+                'norris' : 'Lando Norris',
+                'giovinazzi' : 'Antonio Giovinazzi',
+                'latifi' : 'Nicholas Latifi',
+                'albon' : 'Alexander Albon',
+                'russel' : 'George Russell',
+                'stroll' : 'Lance Stroll',
+                'tsunoda' : 'Yuki Tsunoda',
+                'mick_schumacher' : 'Mick Schumacher',
+                'mazepin' : 'Nikita Mazepin'
                 }
 
 constuctor_mapping = {'mclaren' : 'McLaren',
@@ -1061,6 +1071,10 @@ constuctor_mapping = {'mclaren' : 'McLaren',
                 'lotus_f1' : 'Lotus F1',
                 'manor' : 'Manor Marussia',
                 'haas' : 'Haas F1 Team',
+                'alphatauri' : 'AlphaTauri',
+                'aston_martin' : "Aston Martin",
+                'alpine' : 'Alpine',
+                'racing_point' : 'Racing Point'
                 }
 
 finishing_statuses = {'disqualified' : 'disqualification',
