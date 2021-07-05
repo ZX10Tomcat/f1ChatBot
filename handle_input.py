@@ -63,7 +63,7 @@ def write_context(user_id, payload):
     ##if user_existed==False:
      ##   contexts.append({'user_id': user_id, 'payload': payload})
 
-    json.dump(contexts, open(context_filename,'w'))
+    #json.dump(contexts, open(context_filename,'w'))
 
 def create_bigrams(text):
     regex = re.compile('[%s]' % re.escape(string.punctuation))
@@ -97,14 +97,14 @@ def get_variable(request, CONTEXT, key, index=0, intent = '', get_all=False, req
 
                 else:
                     if intent!='':
-                        if key == 'driver' and any([i for i in DRIVER_WORDS if i in create_bigrams(request['_text'])]):
+                        if key == 'driver:driver' and any([i for i in DRIVER_WORDS if i in create_bigrams(request['_text'])]):
                             return get_key_as_list(CONTEXT, key)
-                        elif key == 'constructor' and any([i for i in CONSTRUCTOR_WORDS if i in create_bigrams(request['_text'])]):
+                        elif key == 'constructor:constructor' and any([i for i in CONSTRUCTOR_WORDS if i in create_bigrams(request['_text'])]):
                             return get_key_as_list(CONTEXT, key)
-                        elif key in ['gp_name', 'circuit_name', 'locality', 'country'] and \
+                        elif key in ['gp_name:gp_name', 'circuit_name:circuit_name', 'locality:locality', 'country:country'] and \
                                 any([i for i in RACE_WORDS if i in create_bigrams(request['_text'])]):
                             return get_key_as_list(CONTEXT, key)
-                        elif key == 'year' and any([i for i in YEAR_WORDS if i in create_bigrams(request['_text'])]):
+                        elif key == 'wit$datetime:datetime' and any([i for i in YEAR_WORDS if i in create_bigrams(request['_text'])]):
                             return get_key_as_list(CONTEXT, key)
                         else:
                             return None
@@ -163,8 +163,8 @@ def handle_confusing_question(request, useful_entities):
     unused_entities = [x for x in unused_entities if not isinstance(x, int)]
 
 
-    if 'intent' not in request['entities'].keys() and \
-        len(request['entities'].keys())>0 and \
+    if 'intents' not in request.keys() and \
+        len(request.keys())>0 and \
         (len(common_entities)==0 or len(unused_entities)>=1) and \
         len(useful_harmless_entities)==0:
 
@@ -291,13 +291,16 @@ def handle_command(input_text, audio_url, user_id):
             resp = proper_language(lang)
             print ("Lang text: ", str(resp))
             sys.stdout.flush()
+        
+        if input_text =='"hello"' or input_text == '"hi"':
+            resp = random.choice(GREETINGS)
 
         else:
-            if response['entities']=={}:# and CONTEXT=={}:
+            if response['intents']==[]:# and CONTEXT=={}:
                 resp = random.choice(WTF)
-            else:
-                if 'intent' in response['entities'].keys():
-                    intent = response['entities']['intent'][0]['value']
+            else:                
+                if 'intents' in response.keys():
+                    intent = response['intents'][0]['name']
                 else:
                     intent = ''
                     resp = random.choice(WTF)
@@ -312,124 +315,127 @@ def handle_command(input_text, audio_url, user_id):
                     for key in response['entities'].keys():
                         CONTEXT.pop(key, None)
 
-                if intent == 'race_result' or (intent == '' and previous_intent == 'race_result'):
-                    useful_entities = ['year', 'number', 'podium', 'top_bottom', 'gp_name', \
-                                       'circuit_name', 'locality', 'country', 'ordinal', \
-                                       'driver', 'constructor', 'team_or_driver']
+
+                if intent =='hello':
+                   resp = random.choice(GREETINGS)
+                elif intent == 'race_result' or (intent == '' and previous_intent == 'race_result'):
+                    useful_entities = ['year:year', 'number:number', 'podium:podium', 'top_bottom:top_bottom', 'gp_name:gp_name', \
+                                       'circuit_name:circuit_name', 'locality:locality', 'country:country', 'ordinal:ordinal', \
+                                       'driver:driver', 'constructor:constructor', 'team_or_driver:team_or_driver']
                     resp, CONTEXT = clear_context_and_call_function(useful_entities, get_race_or_quali_results, \
                         request=response, intent=intent, previous_intent = previous_intent, CONTEXT=CONTEXT, is_quali=False)
                 elif intent == 'qualifying_result' or (intent == '' and previous_intent == 'qualifying_result'):
-                    useful_entities = ['year', 'number', 'podium', 'top_bottom', 'gp_name', \
-                                       'circuit_name', 'locality', 'country', 'ordinal', \
-                                       'driver', 'constructor', 'team_or_driver']
+                    useful_entities = ['year:year', 'number:number', 'podium:podium', 'top_bottom:top_bottom', 'gp_name:gp_name', \
+                                       'circuit_name:circuit_name', 'locality:locality', 'country:country', 'ordinal:ordinal', \
+                                       'driver:driver', 'constructor:constructor', 'team_or_driver:team_or_driver']
                     resp, CONTEXT = clear_context_and_call_function(useful_entities, get_race_or_quali_results, \
                         request=response, intent=intent, previous_intent = previous_intent, CONTEXT=CONTEXT, is_quali=True)
                 elif intent == 'quali_time' or (intent == '' and previous_intent == 'quali_time'):
-                    useful_entities = ['year', 'number', 'top_bottom', 'gp_name', \
-                                       'circuit_name', 'locality', 'country', 'ordinal', \
-                                       'driver', 'constructor', 'team_or_driver', 'quali_period']
+                    useful_entities = ['year:year', 'number:number', 'top_bottom:top_bottom', 'gp_name:gp_name', \
+                                       'circuit_name:circuit_name', 'locality:locality', 'country:country', 'ordinal:ordinal', \
+                                       'driver:driver', 'constructor:constructor', 'team_or_driver:team_or_driver', 'quali_period:quali_period']
                     resp, CONTEXT = clear_context_and_call_function(useful_entities, get_quali_time, \
                         request=response, intent=intent, previous_intent = previous_intent, CONTEXT=CONTEXT)
                 elif intent == 'fastest_lap' or (intent == '' and previous_intent == 'fastest_lap'):
-                    useful_entities = ['year', 'number', 'top_bottom', 'gp_name', \
-                                       'circuit_name', 'locality', 'country']
+                    useful_entities = ['year:year', 'number:number', 'top_bottom:top_bottom', 'gp_name:gp_name', \
+                                       'circuit_name:circuit_name', 'locality:locality', 'country:country']
                     resp, CONTEXT = clear_context_and_call_function(useful_entities, get_fastest_lap, \
                         request=response, intent=intent, previous_intent = previous_intent, CONTEXT=CONTEXT)
                 elif intent == 'pit_stops' or (intent == '' and previous_intent == 'pit_stops'):
-                    useful_entities = ['year', 'number', 'gp_name', \
-                                       'circuit_name', 'locality', 'country', \
-                                       'driver', 'constructor', 'team_or_driver', 'top_bottom']
+                    useful_entities = ['year:year', 'number:number', 'gp_name:gp_name', \
+                                       'circuit_name:circuit_name', 'locality:locality', 'country:country', \
+                                       'driver:driver', 'constructor:constructor', 'team_or_driver:team_or_driver', 'top_bottom:top_bottom']
                     resp, CONTEXT = clear_context_and_call_function(useful_entities, get_pit_stops, \
                         request=response, intent=intent, previous_intent = previous_intent, CONTEXT=CONTEXT)
                 elif intent == 'aggregate_stats' or (intent == '' and previous_intent == 'aggregate_stats'):
-                    useful_entities = ['year', 'number', 'podium', 'top_bottom', 'gp_name', \
-                                       'circuit_name', 'locality', 'country', 'ordinal', \
-                                       'driver', 'constructor', 'team_or_driver']
+                    useful_entities = ['year:year', 'number:number', 'podium:podium', 'top_bottom:top_bottom', 'gp_name:gp_name', \
+                                       'circuit_name:circuit_name', 'locality:locality', 'country:country', 'ordinal:ordinal', \
+                                       'driver:driver', 'constructor:constructor', 'team_or_driver:team_or_driver']
                     resp, CONTEXT = clear_context_and_call_function(useful_entities, get_aggregate_stats, \
                         request=response, intent=intent, previous_intent = previous_intent, CONTEXT=CONTEXT)
                 elif intent == 'most_aggregate_stats' or (intent == '' and previous_intent == 'most_aggregate_stats'):
-                    useful_entities = ['year', 'number', 'podium', 'top_bottom', 'gp_name', \
-                                       'circuit_name', 'locality', 'country', 'ordinal', \
-                                       'team_or_driver']
+                    useful_entities = ['year:year', 'number:number', 'podium:podium', 'top_bottom:top_bottom', 'gp_name:gp_name', \
+                                       'circuit_name:circuit_name', 'locality:locality', 'country:country', 'ordinal:ordinal', \
+                                       'team_or_driver:team_or_driver']
                     resp, CONTEXT = clear_context_and_call_function(useful_entities, get_most_aggregate_stats, \
                         request=response, intent=intent, previous_intent = previous_intent, CONTEXT=CONTEXT)
                 elif intent == 'aggregate_quali_stats' or (intent == '' and previous_intent == 'aggregate_quali_stats'):
-                    useful_entities = ['year', 'number', 'podium', 'top_bottom', 'gp_name', \
-                                       'circuit_name', 'locality', 'country', 'ordinal', \
-                                       'driver', 'constructor', 'team_or_driver']
+                    useful_entities = ['year:year', 'number:number', 'podium:podium', 'top_bottom:top_bottom', 'gp_name:gp_name', \
+                                       'circuit_name:circuit_name', 'locality:locality', 'country:country', 'ordinal:ordinal', \
+                                       'driver:driver', 'constructor:constructor', 'team_or_driver:team_or_driver']
                     resp, CONTEXT = clear_context_and_call_function(useful_entities, get_aggregate_quali_stats, \
                         request=response, intent=intent, previous_intent = previous_intent, CONTEXT=CONTEXT)
                 elif intent == 'most_aggregate_quali_stats' or (intent == '' and previous_intent == 'most_aggregate_quali_stats'):
-                    useful_entities = ['year', 'number', 'podium', 'top_bottom', 'gp_name', \
-                                       'circuit_name', 'locality', 'country', 'ordinal', \
-                                       'team_or_driver']
+                    useful_entities = ['year:year', 'number:number', 'podium:podium', 'top_bottom:top_bottom', 'gp_name:gp_name', \
+                                       'circuit_name:circuit_name', 'locality:locality', 'country:country', 'ordinal:ordinal', \
+                                       'team_or_driver:team_or_driver']
                     resp, CONTEXT = clear_context_and_call_function(useful_entities, get_most_aggregate_quali_stats, \
                         request=response, intent=intent, previous_intent = previous_intent, CONTEXT=CONTEXT)
                 elif intent == 'championship_stats' or (intent == '' and previous_intent == 'championship_stats'):
-                    useful_entities = ['number', 'top_bottom', 'ordinal', \
-                                       'driver', 'constructor']
+                    useful_entities = ['number:number', 'top_bottom:top_bottom', 'ordinal:ordinal', \
+                                       'driver:driver', 'constructor:constructor']
                     resp, CONTEXT = clear_context_and_call_function(useful_entities, get_championship_stats, \
                         request=response, intent=intent, previous_intent = previous_intent, CONTEXT=CONTEXT)
                 elif intent == 'most_championship_stats' or (intent == '' and previous_intent == 'most_championship_stats'):
-                    useful_entities = ['year', 'number', 'podium', 'top_bottom', 'gp_name', \
-                                       'circuit_name', 'locality', 'country', 'ordinal', \
-                                       'team_or_driver']
+                    useful_entities = ['year:year', 'number:number', 'podium:podium', 'top_bottom:top_bottom', 'gp_name:gp_name', \
+                                       'circuit_name:circuit_name', 'locality:locality', 'country:country', 'ordinal:ordinal', \
+                                       'team_or_driver:team_or_driver']
                     resp, CONTEXT = clear_context_and_call_function(useful_entities, get_most_championship_stats, \
                         request=response, intent=intent, previous_intent = previous_intent, CONTEXT=CONTEXT)
                 elif intent == 'appearance_stats' or (intent == '' and previous_intent == 'appearance_stats'):
-                    useful_entities = ['year', 'number', 'gp_name', \
-                                       'circuit_name', 'locality', 'country', \
-                                       'driver', 'constructor', 'team_or_driver']
+                    useful_entities = ['year:year', 'number:number', 'gp_name:gp_name', \
+                                       'circuit_name:circuit_name', 'locality:locality', 'country:country', \
+                                       'driver', 'constructor:constructor', 'team_or_driver:team_or_driver']
                     resp, CONTEXT = clear_context_and_call_function(useful_entities, get_appearance_stats, \
                         request=response, intent=intent, previous_intent = previous_intent, CONTEXT=CONTEXT)
                 elif intent == 'most_appearance_stats' or (intent == '' and previous_intent == 'most_appearance_stats'):
-                    useful_entities = ['year', 'number', 'gp_name', \
-                                       'circuit_name', 'locality', 'country', \
-                                       'team_or_driver']
+                    useful_entities = ['year:year', 'number:number', 'gp_name:gp_name', \
+                                       'circuit_name:circuit_name', 'locality:locality', 'country:country', \
+                                       'team_or_driver:team_or_driver']
                     resp, CONTEXT = clear_context_and_call_function(useful_entities, get_most_appearance_stats, \
                         request=response, intent=intent, previous_intent = previous_intent, CONTEXT=CONTEXT)
                 elif intent == 'drivers_of_team' or (intent == '' and previous_intent == 'drivers_of_team'):
-                    useful_entities = ['year', 'gp_name', 'circuit_name', 'locality', \
-                                        'country', 'constructor', 'number']
+                    useful_entities = ['year:year', 'gp_name:gp_name', 'circuit_name:circuit_name', 'locality:locality', \
+                                        'country:country', 'constructor:constructor', 'number:number']
                     resp, CONTEXT = clear_context_and_call_function(useful_entities, get_drivers_of_team, \
                         request=response, intent=intent, previous_intent = previous_intent, CONTEXT=CONTEXT)
                 elif intent == 'team_of_driver' or (intent == '' and previous_intent == 'team_of_driver'):
-                    useful_entities = ['year', 'gp_name', 'circuit_name', 'locality', \
-                                        'country', 'driver', 'number']
+                    useful_entities = ['year:year', 'gp_name:gp_name', 'circuit_name:circuit_name', 'locality:locality', \
+                                        'country:country', 'driver:driver', 'number:number']
                     resp, CONTEXT = clear_context_and_call_function(useful_entities, get_team_of_driver, \
                         request=response, intent=intent, previous_intent = previous_intent, CONTEXT=CONTEXT)
                 elif intent == 'race_schedule' or (intent == '' and previous_intent == 'race_schedule'):
-                    useful_entities = ['gp_name', 'circuit_name', 'locality', 'country']
+                    useful_entities = ['gp_name:gp_name', 'circuit_name:circuit_name', 'locality:locality', 'country:country']
                     resp, CONTEXT = clear_context_and_call_function(useful_entities, get_race_schedule, \
                         request=response, intent=intent, previous_intent = previous_intent, CONTEXT=CONTEXT)
                 elif intent == 'standings' or (intent == '' and previous_intent == 'standings'):
-                    useful_entities = ['year', 'number', 'top_bottom', 'ordinal', \
-                                       'driver', 'constructor', 'team_or_driver']
+                    useful_entities = ['year:year', 'number:number', 'top_bottom:top_bottom', 'ordinal:ordinal', \
+                                       'driver:driver', 'constructor:constructor', 'team_or_driver:team_or_driver']
                     resp, CONTEXT = clear_context_and_call_function(useful_entities, get_standings, \
                         request=response, intent=intent, previous_intent = previous_intent, CONTEXT=CONTEXT)
                 elif intent == 'free_practice' or (intent == '' and previous_intent == 'free_practice'):
-                    useful_entities = ['year', 'number', 'podium', 'top_bottom', 'gp_name', \
-                                       'circuit_name', 'locality', 'country', 'ordinal', \
-                                       'driver', 'constructor', 'team_or_driver']
+                    useful_entities = ['year:year', 'number:number', 'podium:podium', 'top_bottom:top_bottom', 'gp_name:gp_name', \
+                                       'circuit_name:circuit_name', 'locality:locality', 'country:country', 'ordinal:ordinal', \
+                                       'driver:driver', 'constructor:constructor', 'team_or_driver:team_or_driver']
                     resp, CONTEXT = clear_context_and_call_function(useful_entities, get_free_practice, \
                         request=response, intent=intent, previous_intent = previous_intent, CONTEXT=CONTEXT)
                 elif intent == 'retirement_reason' or (intent == '' and previous_intent == 'retirement_reason'):
-                    useful_entities = ['year', 'number', 'gp_name', \
-                                       'circuit_name', 'locality', 'country', \
-                                       'driver', 'constructor']
+                    useful_entities = ['year:year', 'number:number', 'gp_name:gp_name', \
+                                       'circuit_name:circuit_name', 'locality:locality', 'country:country', \
+                                       'driver:driver', 'constructor:constructor']
                     resp, CONTEXT = clear_context_and_call_function(useful_entities, get_retirement_reason, \
                         request=response, intent=intent, previous_intent = previous_intent, CONTEXT=CONTEXT)
                 elif intent == 'retirees' or (intent == '' and previous_intent == 'retirees'):
-                    useful_entities = ['year', 'number', 'gp_name', \
-                                       'circuit_name', 'locality', 'country']
+                    useful_entities = ['year:year', 'number:number', 'gp_name:gp_name', \
+                                       'circuit_name:circuit_name', 'locality:locality', 'country:country']
                     resp, CONTEXT = clear_context_and_call_function(useful_entities, get_retirees, \
                         request=response, intent=intent, previous_intent = previous_intent, CONTEXT=CONTEXT)
                 elif intent == 'social_media' or (intent == '' and previous_intent == 'social_media'):
-                    useful_entities = ['driver', 'constructor']
+                    useful_entities = ['driver', 'constructor:constructor']
                     resp, CONTEXT = clear_context_and_call_function(useful_entities, get_social_media, \
                         request=response, intent=intent, previous_intent = previous_intent, CONTEXT=CONTEXT)
                 elif intent == 'team_or_driver_comparison' or (intent == '' and previous_intent == 'team_or_driver_comparison'):
-                    useful_entities = ['driver', 'constructor']
+                    useful_entities = ['driver:driver', 'constructor:constructor']
                     resp, CONTEXT = clear_context_and_call_function(useful_entities, get_team_or_driver_comparison, \
                         request=response, intent=intent, previous_intent = previous_intent, CONTEXT=CONTEXT)
                 elif intent == 'latest_news' or (intent == '' and previous_intent == 'latest_news'):
@@ -441,32 +447,32 @@ def handle_command(input_text, audio_url, user_id):
                     resp, CONTEXT = clear_context_and_call_function(useful_entities, get_latest_videos, \
                         request=response, intent=intent, previous_intent = previous_intent, CONTEXT=CONTEXT)
                 elif intent == 'ticket' or (intent == '' and previous_intent == 'ticket'):
-                    useful_entities = ['gp_name', 'circuit_name', 'locality', 'country']
+                    useful_entities = ['gp_name:gp_name', 'circuit_name:circuit_name', 'locality:locality', 'country:country']
                     resp, CONTEXT = clear_context_and_call_function(useful_entities, get_ticket, \
                         request=response, intent=intent, previous_intent = previous_intent, CONTEXT=CONTEXT)
                 elif intent == 'best_driver_or_team' or (intent == '' and previous_intent == 'best_driver_or_team'):
-                    useful_entities = ['team_or_driver']
+                    useful_entities = ['team_or_driver:team_or_driver']
                     resp, CONTEXT = clear_context_and_call_function(useful_entities, get_best_driver_or_team, \
                         request=response, intent=intent, previous_intent = previous_intent, CONTEXT=CONTEXT)
                 elif intent == 'teammate' or (intent == '' and previous_intent == 'teammate'):
-                    useful_entities = ['year', 'gp_name', 'circuit_name', 'locality', \
-                                        'country', 'driver']
+                    useful_entities = ['year:year', 'gp_name:gp_name', 'circuit_name:circuit_name', 'locality:locality', \
+                                        'country:country', 'driver:driver']
                     resp, CONTEXT = clear_context_and_call_function(useful_entities, get_teammate, \
                         request=response, intent=intent, previous_intent = previous_intent, CONTEXT=CONTEXT)
                 elif intent == 'flags' or (intent == '' and previous_intent == 'flags'):
-                    useful_entities = ['flag_colours_shapes']
+                    useful_entities = ['flag_colours_shapes:flag_colours_shapes']
                     resp, CONTEXT = clear_context_and_call_function(useful_entities, get_flags, \
                         request=response, intent=intent, previous_intent = previous_intent, CONTEXT=CONTEXT)
                 elif intent == 'driver_or_team_info' or (intent == '' and previous_intent == 'driver_or_team_info'):
-                    useful_entities = ['driver', 'constructor']
+                    useful_entities = ['driver:driver', 'constructor:constructor']
                     resp, CONTEXT = clear_context_and_call_function(useful_entities, get_driver_or_team_info, \
                         request=response, intent=intent, previous_intent = previous_intent, CONTEXT=CONTEXT)
                 elif intent == 'season_review' or (intent == '' and previous_intent == 'season_review'):
-                    useful_entities = ['year', 'number']
+                    useful_entities = ['year:year', 'number:number']
                     resp, CONTEXT = clear_context_and_call_function(useful_entities, get_season_review, \
                         request=response, intent=intent, previous_intent = previous_intent, CONTEXT=CONTEXT)
                 elif intent == 'driver_homeland' or (intent == '' and previous_intent == 'driver_homeland'):
-                    useful_entities = ['driver']
+                    useful_entities = ['driver:driver']
                     resp, CONTEXT = clear_context_and_call_function(useful_entities, get_driver_homeland, \
                         request=response, intent=intent, previous_intent = previous_intent, CONTEXT=CONTEXT)
                 elif intent == 'my_god' or (intent == '' and previous_intent == 'my_god'):
@@ -478,9 +484,9 @@ def handle_command(input_text, audio_url, user_id):
                     resp, CONTEXT = clear_context_and_call_function(useful_entities, get_help, \
                         request=response, intent=intent, previous_intent = previous_intent, CONTEXT=CONTEXT)
                 elif intent == 'play_game' or (intent == '' and previous_intent == 'play_game'):
-                    useful_entities = ['year', 'number', 'podium', 'top_bottom', 'gp_name', \
-                                       'circuit_name', 'locality', 'country', 'ordinal', \
-                                       'driver', 'constructor', 'team_or_driver', \
+                    useful_entities = ['year:year', 'number:number', 'podium:podium', 'top_bottom:top_bottom', 'gp_name:gp_name', \
+                                       'circuit_name:circuit_name', 'locality:locality', 'country:country', 'ordinal:ordinal', \
+                                       'driver:driver', 'constructor:constructor', 'team_or_driver:team_or_driver', \
                                        'correct_answers', 'num_questions', 'last_asked_question', \
                                        'questions_asked']
                     resp, CONTEXT = clear_context_and_call_function(useful_entities, get_play_game, \
@@ -551,7 +557,7 @@ def get_race_or_quali_results(request, intent, previous_intent, CONTEXT, is_qual
 
     year = None
     number = None
-    numbers = get_variable(request, CONTEXT, 'number', 0, intent, get_all=True)
+    numbers = get_variable(request, CONTEXT, 'wit$number:number', 0, intent, get_all=True)
     year = get_variable(request, CONTEXT, 'year', 0, intent)
     if numbers!=None:
         for i in numbers:
@@ -560,8 +566,8 @@ def get_race_or_quali_results(request, intent, previous_intent, CONTEXT, is_qual
             else:
                 number = i
 
-    podium = get_variable(request, CONTEXT, 'podium', 0, intent)
-    top_bottom = get_variable(request, CONTEXT, 'top_bottom', 0, intent)
+    podium = get_variable(request, CONTEXT, 'podium:podium', 0, intent)
+    top_bottom = get_variable(request, CONTEXT, 'top_bottom:top_bottom', 0, intent)
     if podium=='podium':
         top_bottom = 'top'
         number = 3
@@ -571,20 +577,20 @@ def get_race_or_quali_results(request, intent, previous_intent, CONTEXT, is_qual
         top_bottom = 'top'
         number = 1
 
-    if any([i in ['gp_name', 'circuit_name', 'locality', 'country'] for i in request['entities'].keys()]):
+    if any([i in ['gp_name:gp_name', 'circuit_name:circuit_name', 'locality:locality', 'country:country'] for i in request['entities'].keys()]):
         CONTEXT.pop('gp_name', None)
         CONTEXT.pop('circuit_name', None)
         CONTEXT.pop('locality', None)
         CONTEXT.pop('country', None)
 
-    gp_name = get_variable(request, CONTEXT, 'gp_name', 0, intent)
-    circuit_name = get_variable(request, CONTEXT, 'circuit_name', 0, intent)
-    locality = get_variable(request, CONTEXT, 'locality', 0, intent)
-    country = get_variable(request, CONTEXT, 'country', 0, intent)
-    ordinal = get_variable(request, CONTEXT, 'ordinal', 0, intent)
-    driver = get_variable(request, CONTEXT, 'driver', 0, intent)
-    constructor = get_variable(request, CONTEXT, 'constructor', 0, intent)
-    team_or_driver = get_variable(request, CONTEXT, 'team_or_driver', 0, intent)
+    gp_name = get_variable(request, CONTEXT, 'gp_name:gp_name', 0, intent)
+    circuit_name = get_variable(request, CONTEXT, 'circuit_name:circuit_name', 0, intent)
+    locality = get_variable(request, CONTEXT, 'locality:locality', 0, intent)
+    country = get_variable(request, CONTEXT, 'country:country', 0, intent)
+    ordinal = get_variable(request, CONTEXT, 'ordinal:ordinal', 0, intent)
+    driver = get_variable(request, CONTEXT, 'driver:driver', 0, intent)
+    constructor = get_variable(request, CONTEXT, 'constructor:constructor', 0, intent)
+    team_or_driver = get_variable(request, CONTEXT, 'team_or_driver:team_or_driver', 0, intent)
 
     if 'ordinal' in request['entities'].keys():
         number = None
@@ -2473,8 +2479,8 @@ def get_driver_or_team_info(request, intent, previous_intent, CONTEXT):
 def get_driver_homeland(request, intent, previous_intent, CONTEXT):
     CONTEXT['intent'] = 'driver_homeland'
 
-    if 'driver' in request['entities'].keys(): 
-        driver = get_variable(request, CONTEXT, 'driver', 0, intent, request_only=True)
+    if 'driver:driver' in request['entities'].keys(): 
+        driver = get_variable(request, CONTEXT, 'driver:driver', 0, intent, request_only=True)
     else:
         driver = get_variable(request, CONTEXT, 'driver', 0, intent)
 

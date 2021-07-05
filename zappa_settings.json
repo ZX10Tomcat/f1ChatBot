@@ -1,0 +1,10 @@
+{
+    "dev": {
+        "app_function": "flask_app.app",
+        "profile_name": "default",
+        "project_name": "f1chatbot",
+        "runtime": "python3.8",
+        "s3_bucket": "zappa-anr8yp2ul",
+        "aws_region": "eu-central-1"
+    }
+}

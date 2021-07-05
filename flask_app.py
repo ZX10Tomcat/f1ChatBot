@@ -6,7 +6,7 @@ import requests
 import logging
 
 from flask import Flask, request
-from flask_sslify import SSLify
+#from flask_sslify import SSLify
 
 from handle_input import handle_command
 from fb_buttons import create_getting_started_quick_reply
